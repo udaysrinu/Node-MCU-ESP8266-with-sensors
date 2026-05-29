@@ -1,0 +1,50 @@
+flowchart LR
+    subgraph Sensors["Physical sensors"]
+        DHT["DHT11<br/>temperature + humidity"]
+        LDR["LDR module<br/>light / dark"]
+        IR["IR sensor<br/>analog A0"]
+        SOIL["Soil moisture<br/>analog A0"]
+        ADXL["ADXL345<br/>accelerometer (I2C)"]
+        HB["Heartbeat / pulse<br/>analog A0"]
+    end
+
+    subgraph MCU["NodeMCU ESP8266 (ESP-12E)"]
+        D5["D5 / GPIO14"]
+        D6["D6 / GPIO12"]
+        D7["D7 / GPIO13"]
+        D8["D8 / GPIO15"]
+        A0["A0 (ADC)"]
+        I2C["I2C: D1=SCL, D2=SDA"]
+        CPU["Xtensa LX106<br/>80 MHz, 4MB flash"]
+    end
+
+    subgraph Output["Output / observation"]
+        SERIAL["USB Serial Monitor<br/>115200 baud"]
+        LED["RGB LED via PWM"]
+        ONBOARD["Onboard LED (GPIO16)"]
+    end
+
+    DHT -->|digital| D5
+    LDR -->|digital| D7
+    IR -->|analog| A0
+    SOIL -->|analog| A0
+    HB -->|analog| A0
+    ADXL -->|I2C| I2C
+
+    D5 --> CPU
+    D6 --> CPU
+    D7 --> CPU
+    D8 --> CPU
+    A0 --> CPU
+    I2C --> CPU
+
+    CPU -->|Serial.print| SERIAL
+    CPU -->|analogWrite PWM| LED
+    CPU -->|digitalWrite| ONBOARD
+
+    classDef sensor fill:#e8f4f8,stroke:#2c7da0,color:#000
+    classDef mcu fill:#fff4e6,stroke:#d97706,color:#000
+    classDef output fill:#e8f5e9,stroke:#2e7d32,color:#000
+    class DHT,LDR,IR,SOIL,ADXL,HB sensor
+    class D5,D6,D7,D8,A0,I2C,CPU mcu
+    class SERIAL,LED,ONBOARD output
